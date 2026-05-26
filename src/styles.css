@@ -1,0 +1,138 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body {
+  background: transparent;
+  overflow: hidden;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+#pet-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 250px;
+  background: rgba(30, 30, 40, 0.88);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  padding: 12px;
+  cursor: grab;
+  -webkit-app-region: no-drag;
+}
+
+#sprite {
+  font-size: 32px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bounce 2s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+#sprite.sleeping {
+  animation: sway 3s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+#sprite.dead {
+  animation: none;
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+#name {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 4px 0 8px;
+  letter-spacing: 0.5px;
+}
+
+#stats {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-label {
+  font-size: 12px;
+  width: 18px;
+  text-align: center;
+}
+
+.stat-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stat-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease, background 0.5s ease;
+  width: 80%;
+  background: #4ade80;
+}
+
+.stat-fill.warning { background: #facc15; }
+.stat-fill.danger  { background: #f87171; }
+
+#buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+#buttons button {
+  width: 40px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+#buttons button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+#buttons button:active {
+  transform: scale(0.92);
+}
+
+#status-message {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  margin-top: 6px;
+  height: 14px;
+  text-align: center;
+}
