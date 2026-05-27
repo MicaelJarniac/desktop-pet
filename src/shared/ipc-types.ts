@@ -1,5 +1,7 @@
 import type { AppState } from './state-types'
 
+export type { AppState }
+
 export interface IpcChannels {
   'state:load': { request: void; response: AppState | null }
   'state:save': { request: AppState; response: void }
