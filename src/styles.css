@@ -86,7 +86,6 @@ body {
 }
 
 #stats {
-  display: flex;
   flex-direction: column;
   gap: 4px;
   width: 100%;
@@ -130,7 +129,6 @@ body {
 }
 
 #buttons {
-  display: flex;
   gap: 6px;
   margin-top: 8px;
   justify-content: center;
