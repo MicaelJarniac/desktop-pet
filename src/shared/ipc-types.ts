@@ -7,8 +7,9 @@ export interface IpcChannels {
   'state:save': { request: AppState; response: void }
   'window:move': { request: { dx: number; dy: number }; response: void }
   'window:setBounds': { request: WindowBounds; response: void }
-  // main → renderer broadcast for tray actions:
+  // main → renderer broadcasts:
   'tray:action': { broadcast: 'feed' | 'play' | 'sleep' | 'stats' }
+  'window:resized': { broadcast: void }
 }
 
 export type TrayAction = IpcChannels['tray:action']['broadcast']
@@ -19,5 +20,6 @@ export interface ElectronAPI {
   moveWindow: (delta: { dx: number; dy: number }) => void
   setBounds: (bounds: WindowBounds) => void
   onTrayAction: (cb: (action: TrayAction) => void) => () => void
+  onResized: (cb: () => void) => () => void
   notify: (title: string, body: string) => void
 }

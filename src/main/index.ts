@@ -104,14 +104,18 @@ function registerIpc(): void {
 
   ipcMain.on('window:setBounds', (_e, bounds: WindowBounds) => {
     if (mainWindow === null) return
-    mainWindow.setBounds({
+    const target = mainWindow
+    target.once('resize', () => {
+      target.webContents.send('window:resized')
+    })
+    target.setBounds({
       x: Math.round(bounds.x),
       y: Math.round(bounds.y),
       width: Math.round(bounds.width),
       height: Math.round(bounds.height),
     })
-    if (!mainWindow.isVisible()) {
-      mainWindow.show()
+    if (!target.isVisible()) {
+      target.show()
     }
   })
 

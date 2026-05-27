@@ -123,6 +123,11 @@ interface Layout {
   hzOffsetY: number
 }
 
+interface Anchor {
+  x: number
+  y: number
+}
+
 async function waitForRenderSettle(): Promise<void> {
   if (document.fonts.status !== 'loaded') {
     await document.fonts.ready
@@ -142,30 +147,32 @@ function readLayoutFromExpandedRender(hoverZone: HTMLElement): Layout {
   }
 }
 
-function expandedBoundsFromIdle(
-  layout: Layout,
-  idleScreenX: number,
-  idleScreenY: number,
-): WindowBounds {
+function expandedBoundsAt(layout: Layout, anchor: Anchor): WindowBounds {
   return {
-    x: idleScreenX - layout.hzOffsetX,
-    y: idleScreenY - layout.hzOffsetY,
+    x: anchor.x - layout.hzOffsetX - layout.idleWidth / 2,
+    y: anchor.y - layout.hzOffsetY - layout.idleHeight / 2,
     width: CONFIG.WINDOW.width,
     height: CONFIG.WINDOW.height,
   }
 }
 
-function idleBoundsFromExpanded(
-  layout: Layout,
-  expScreenX: number,
-  expScreenY: number,
-): WindowBounds {
+function idleBoundsAt(layout: Layout, anchor: Anchor): WindowBounds {
   return {
-    x: expScreenX + layout.hzOffsetX,
-    y: expScreenY + layout.hzOffsetY,
+    x: anchor.x - layout.idleWidth / 2,
+    y: anchor.y - layout.idleHeight / 2,
     width: layout.idleWidth,
     height: layout.idleHeight,
   }
+}
+
+function setBoundsAndWait(bounds: WindowBounds): Promise<void> {
+  return new Promise<void>((resolve) => {
+    const off = window.electronAPI.onResized(() => {
+      off()
+      resolve()
+    })
+    window.electronAPI.setBounds(bounds)
+  })
 }
 
 async function bootstrap(): Promise<void> {
@@ -234,8 +241,12 @@ async function bootstrap(): Promise<void> {
     }
   })
 
+  const anchor: Anchor = { x: 0, y: 0 }
+
   const offDrag = makeDraggable(refs.container, ({ dx, dy }) => {
     window.electronAPI.moveWindow({ dx, dy })
+    anchor.x += dx
+    anchor.y += dy
   })
 
   const settings = attachSettingsUI(pet, {
@@ -261,37 +272,52 @@ async function bootstrap(): Promise<void> {
   refs.container.classList.add('is-hovered')
   await waitForRenderSettle()
   let layout = readLayoutFromExpandedRender(refs.hoverZone)
+  anchor.x = window.screenX + layout.hzOffsetX + layout.idleWidth / 2
+  anchor.y = window.screenY + layout.hzOffsetY + layout.idleHeight / 2
 
   let isExpanded = true
+  let inFlight = false
 
-  const expand = (): void => {
-    if (isExpanded) return
+  const expand = async (): Promise<void> => {
+    if (isExpanded || inFlight) return
+    inFlight = true
     isExpanded = true
-    refs.container.classList.add('is-hovered')
-    window.electronAPI.setBounds(expandedBoundsFromIdle(layout, window.screenX, window.screenY))
+    try {
+      await setBoundsAndWait(expandedBoundsAt(layout, anchor))
+      refs.container.classList.add('is-hovered')
+    } finally {
+      inFlight = false
+    }
   }
 
-  const shrink = (): void => {
-    if (!isExpanded) return
-    layout = readLayoutFromExpandedRender(refs.hoverZone)
+  const shrink = async (): Promise<void> => {
+    if (!isExpanded || inFlight) return
+    inFlight = true
     isExpanded = false
-    refs.container.classList.remove('is-hovered')
-    window.electronAPI.setBounds(idleBoundsFromExpanded(layout, window.screenX, window.screenY))
+    try {
+      layout = readLayoutFromExpandedRender(refs.hoverZone)
+      anchor.x = window.screenX + layout.hzOffsetX + layout.idleWidth / 2
+      anchor.y = window.screenY + layout.hzOffsetY + layout.idleHeight / 2
+      refs.container.classList.remove('is-hovered')
+      await setBoundsAndWait(idleBoundsAt(layout, anchor))
+    } finally {
+      inFlight = false
+    }
   }
 
   const onHoverEnter = (): void => {
     if (document.documentElement.classList.contains('dragging')) return
-    expand()
+    void expand()
   }
   const onHoverLeave = (): void => {
     if (document.documentElement.classList.contains('dragging')) return
     if (settings.isOpen()) return
-    shrink()
+    void shrink()
   }
   refs.hoverZone.addEventListener('mouseenter', onHoverEnter)
   refs.container.addEventListener('mouseleave', onHoverLeave)
 
-  shrink()
+  void shrink()
 
   pet.start()
 

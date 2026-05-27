@@ -18,6 +18,13 @@ const api = {
       ipcRenderer.removeListener('tray:action', handler)
     }
   },
+  onResized: (cb: () => void): (() => void) => {
+    const handler = (): void => cb()
+    ipcRenderer.on('window:resized', handler)
+    return () => {
+      ipcRenderer.removeListener('window:resized', handler)
+    }
+  },
   notify: (title: string, body: string): void => {
     ipcRenderer.send('pet-notify', { title, body })
   },
