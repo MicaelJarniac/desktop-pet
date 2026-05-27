@@ -1,0 +1,10 @@
+node_modules/
+dist/
+package-lock.json
+.sisyphus/
+main.js
+preload.js
+src/index.html
+src/pet.js
+src/renderer.js
+src/styles.css

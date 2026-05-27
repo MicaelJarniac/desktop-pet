@@ -4,10 +4,25 @@
   "description": "Tamagotchi-style desktop pet built with Electron",
   "main": "main.js",
   "scripts": {
+    "build": "tsx scripts/build.ts",
+    "dev": "tsx scripts/dev.ts",
     "start": "electron .",
-    "dev": "electron . --dev"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "electron": "^35.0.0"
+    "@eslint/js": "^9.39.4",
+    "@types/node": "^22.19.19",
+    "electron": "^35.0.0",
+    "esbuild": "^0.24.2",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^9.1.2",
+    "prettier": "^3.8.3",
+    "tsx": "^4.22.3",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.60.0"
   }
 }
