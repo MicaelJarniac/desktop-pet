@@ -27,9 +27,16 @@ body {
   transition: background 200ms ease, border-color 200ms ease;
 }
 
-#pet-container:hover {
+#pet-container.is-hovered {
   background: rgba(30, 30, 40, 0.88);
   border-color: rgba(255, 255, 255, 0.12);
+}
+
+#hover-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px;
 }
 
 #sprite {
@@ -57,9 +64,9 @@ body {
   transition: opacity 200ms ease;
 }
 
-#pet-container:hover #stats,
-#pet-container:hover #buttons,
-#pet-container:hover #status-message {
+#pet-container.is-hovered #stats,
+#pet-container.is-hovered #buttons,
+#pet-container.is-hovered #status-message {
   opacity: 1;
   pointer-events: auto;
 }

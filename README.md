@@ -78,7 +78,7 @@ Persistence flows renderer → main: the renderer sends snapshots via `ipcRender
 
 The `Pet` class in `src/renderer/pet.ts` contains zero DOM and zero Electron imports — it runs in plain Node and could be unit-tested in isolation. Notifications, IPC, and DOM updates are wired in the renderer orchestrator.
 
-The hover-only UI is pure CSS via `#pet-container:hover` rules. The renderer applies a `.sticky-reveal` class to individual stat rows whose value drops below `CONFIG.THRESHOLDS.stickyRevealAt`. IPC channels are typed once in `src/shared/ipc-types.ts` and enforced on the preload side with a `satisfies ElectronAPI` clause.
+The hover-only UI uses a small "hot zone" wrapping just the sprite and name. JavaScript adds a `.is-hovered` class to `#pet-container` on `mouseenter` of `#hover-zone` and removes it on `mouseleave` of the full container, so users can move from the sprite to the action buttons without losing hover. The settings overlay suppresses the hide while open. The renderer also applies a `.sticky-reveal` class to individual stat rows whose value drops below `CONFIG.THRESHOLDS.stickyRevealAt`. IPC channels are typed once in `src/shared/ipc-types.ts` and enforced on the preload side with a `satisfies ElectronAPI` clause.
 
 ## Configuration
 

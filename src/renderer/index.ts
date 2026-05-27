@@ -9,6 +9,7 @@ import { attachStickyReveal } from './sticky-reveal'
 
 interface DomRefs {
   container: HTMLElement
+  hoverZone: HTMLElement
   spriteEl: HTMLElement
   nameEl: HTMLElement
   hungerBar: HTMLElement
@@ -46,6 +47,7 @@ function requireRowByDataStat(stat: 'hunger' | 'happiness' | 'energy'): HTMLElem
 function resolveDomRefs(): DomRefs {
   return {
     container: requireEl('pet-container'),
+    hoverZone: requireEl('hover-zone'),
     spriteEl: requireEl('sprite'),
     nameEl: requireEl('name'),
     hungerBar: requireEl('hunger-bar'),
@@ -202,6 +204,17 @@ async function bootstrap(): Promise<void> {
     energy: refs.energyRow,
   })
 
+  const onHoverEnter = (): void => {
+    refs.container.classList.add('is-hovered')
+  }
+  const onHoverLeave = (): void => {
+    if (!settings.isOpen()) {
+      refs.container.classList.remove('is-hovered')
+    }
+  }
+  refs.hoverZone.addEventListener('mouseenter', onHoverEnter)
+  refs.container.addEventListener('mouseleave', onHoverLeave)
+
   updateUI(pet.state, pet.mood, refs, pet)
 
   pet.start()
@@ -212,6 +225,8 @@ async function bootstrap(): Promise<void> {
     offKeys()
     offSticky()
     settings.cleanup()
+    refs.hoverZone.removeEventListener('mouseenter', onHoverEnter)
+    refs.container.removeEventListener('mouseleave', onHoverLeave)
     pet.stop()
   })
   ;(window as unknown as { __pet?: Pet }).__pet = pet
