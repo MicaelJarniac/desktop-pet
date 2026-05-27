@@ -47,6 +47,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
   animation: bounce 2s ease-in-out infinite;
   transition: all 0.3s ease;
 }
@@ -58,10 +59,15 @@ body {
   margin: 4px 0 8px;
 }
 
+#name,
 #stats,
 #buttons,
 #status-message {
   display: none;
+}
+
+#pet-container.is-hovered #name {
+  display: block;
 }
 
 #pet-container.is-hovered #stats {

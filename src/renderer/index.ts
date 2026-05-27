@@ -121,43 +121,50 @@ interface Layout {
   idleHeight: number
   hzOffsetX: number
   hzOffsetY: number
-  expandedBoundsFromIdle: (idleScreenX: number, idleScreenY: number) => WindowBounds
-  idleBoundsFromExpanded: (expScreenX: number, expScreenY: number) => WindowBounds
 }
 
-async function measureLayout(container: HTMLElement, hoverZone: HTMLElement): Promise<Layout> {
-  container.classList.add('is-hovered')
+async function waitForRenderSettle(): Promise<void> {
   if (document.fonts.status !== 'loaded') {
     await document.fonts.ready
   }
   await new Promise<void>((r) => requestAnimationFrame(() => r()))
+  await new Promise<void>((r) => requestAnimationFrame(() => r()))
+  await new Promise<void>((r) => setTimeout(() => r(), 50))
+}
+
+function readLayoutFromExpandedRender(hoverZone: HTMLElement): Layout {
   const rect = hoverZone.getBoundingClientRect()
-  container.classList.remove('is-hovered')
-
-  const hzOffsetX = rect.x
-  const hzOffsetY = rect.y
-  const idleWidth = Math.ceil(rect.width)
-  const idleHeight = Math.ceil(rect.height)
-  const expWidth = CONFIG.WINDOW.width
-  const expHeight = CONFIG.WINDOW.height
-
   return {
-    idleWidth,
-    idleHeight,
-    hzOffsetX,
-    hzOffsetY,
-    expandedBoundsFromIdle: (idleScreenX, idleScreenY) => ({
-      x: idleScreenX - hzOffsetX,
-      y: idleScreenY - hzOffsetY,
-      width: expWidth,
-      height: expHeight,
-    }),
-    idleBoundsFromExpanded: (expScreenX, expScreenY) => ({
-      x: expScreenX + hzOffsetX,
-      y: expScreenY + hzOffsetY,
-      width: idleWidth,
-      height: idleHeight,
-    }),
+    hzOffsetX: rect.x,
+    hzOffsetY: rect.y,
+    idleWidth: Math.ceil(rect.width),
+    idleHeight: Math.ceil(rect.height),
+  }
+}
+
+function expandedBoundsFromIdle(
+  layout: Layout,
+  idleScreenX: number,
+  idleScreenY: number,
+): WindowBounds {
+  return {
+    x: idleScreenX - layout.hzOffsetX,
+    y: idleScreenY - layout.hzOffsetY,
+    width: CONFIG.WINDOW.width,
+    height: CONFIG.WINDOW.height,
+  }
+}
+
+function idleBoundsFromExpanded(
+  layout: Layout,
+  expScreenX: number,
+  expScreenY: number,
+): WindowBounds {
+  return {
+    x: expScreenX + layout.hzOffsetX,
+    y: expScreenY + layout.hzOffsetY,
+    width: layout.idleWidth,
+    height: layout.idleHeight,
   }
 }
 
@@ -251,7 +258,9 @@ async function bootstrap(): Promise<void> {
 
   updateUI(pet.state, pet.mood, refs, pet)
 
-  const layout = await measureLayout(refs.container, refs.hoverZone)
+  refs.container.classList.add('is-hovered')
+  await waitForRenderSettle()
+  let layout = readLayoutFromExpandedRender(refs.hoverZone)
 
   let isExpanded = true
 
@@ -259,14 +268,15 @@ async function bootstrap(): Promise<void> {
     if (isExpanded) return
     isExpanded = true
     refs.container.classList.add('is-hovered')
-    window.electronAPI.setBounds(layout.expandedBoundsFromIdle(window.screenX, window.screenY))
+    window.electronAPI.setBounds(expandedBoundsFromIdle(layout, window.screenX, window.screenY))
   }
 
   const shrink = (): void => {
     if (!isExpanded) return
+    layout = readLayoutFromExpandedRender(refs.hoverZone)
     isExpanded = false
     refs.container.classList.remove('is-hovered')
-    window.electronAPI.setBounds(layout.idleBoundsFromExpanded(window.screenX, window.screenY))
+    window.electronAPI.setBounds(idleBoundsFromExpanded(layout, window.screenX, window.screenY))
   }
 
   const onHoverEnter = (): void => {
