@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitOverride": true,
+    "skipLibCheck": false,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*", "scripts/**/*"]
+}

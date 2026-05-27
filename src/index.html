@@ -8,34 +8,60 @@
 </head>
 <body>
   <div id="pet-container">
-    <div id="sprite"></div>
+    <div id="hover-zone">
+      <div id="sprite"></div>
+    </div>
     <div id="name">Pixel</div>
 
     <div id="stats">
-      <div class="stat">
+      <div class="stat" data-stat="hunger">
         <span class="stat-label">🍖</span>
         <div class="stat-bar"><div id="hunger-bar" class="stat-fill"></div></div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="happiness">
         <span class="stat-label">💛</span>
         <div class="stat-bar"><div id="happiness-bar" class="stat-fill"></div></div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="energy">
         <span class="stat-label">⚡</span>
         <div class="stat-bar"><div id="energy-bar" class="stat-fill"></div></div>
       </div>
     </div>
 
     <div id="buttons">
-      <button id="btn-feed" title="Feed">🍖</button>
-      <button id="btn-play" title="Play">🎾</button>
-      <button id="btn-sleep" title="Sleep">💤</button>
+      <button id="btn-feed" title="Feed (F)">🍖</button>
+      <button id="btn-play" title="Play (P)">🎾</button>
+      <button id="btn-sleep" title="Sleep (S)">💤</button>
+      <button id="btn-settings" title="Settings" data-no-drag>⚙</button>
     </div>
 
     <div id="status-message"></div>
+
+    <div id="settings-overlay" hidden data-no-drag>
+      <button id="settings-close" type="button" aria-label="Close">×</button>
+      <h2>Settings</h2>
+      <label>
+        <span>Name</span>
+        <input id="setting-name" type="text" maxlength="20" autocomplete="off" />
+      </label>
+      <label>
+        <span>Decay speed</span>
+        <input id="setting-decay" type="range" min="0.5" max="2" step="0.1" />
+        <output id="setting-decay-out"></output>
+      </label>
+      <label>
+        <span>Pet type</span>
+        <select id="setting-type">
+          <option value="pixel">Pixel</option>
+          <option value="tama">Tama</option>
+          <option value="bot">Bot</option>
+          <option value="ghost">Ghost</option>
+        </select>
+      </label>
+      <button id="setting-reset" type="button">Reset Pet</button>
+    </div>
   </div>
 
-  <script src="pet.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>
