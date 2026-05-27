@@ -1,29 +1,35 @@
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
   user-select: none;
 }
 
 body {
+  margin: 0;
+  padding: 0;
   background: transparent;
   overflow: hidden;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: system-ui, sans-serif;
 }
 
 #pet-container {
+  width: 200px;
+  height: 250px;
+  padding: 12px;
+  border-radius: 20px;
+  background: transparent;
+  border: 2px solid transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 200px;
-  height: 250px;
-  background: rgba(30, 30, 40, 0.88);
-  border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  padding: 12px;
+  position: relative;
   cursor: grab;
-  -webkit-app-region: no-drag;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+
+#pet-container:hover {
+  background: rgba(30, 30, 40, 0.88);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 #sprite {
@@ -36,52 +42,54 @@ body {
   transition: all 0.3s ease;
 }
 
-#sprite.sleeping {
-  animation: sway 3s ease-in-out infinite;
-  opacity: 0.7;
-}
-
-#sprite.dead {
-  animation: none;
-  opacity: 0.4;
-  filter: grayscale(1);
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-@keyframes sway {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-3deg); }
-  75% { transform: rotate(3deg); }
-}
-
 #name {
   color: #fff;
   font-size: 14px;
   font-weight: 600;
   margin: 4px 0 8px;
-  letter-spacing: 0.5px;
+}
+
+#stats,
+#buttons,
+#status-message {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+#pet-container:hover #stats,
+#pet-container:hover #buttons,
+#pet-container:hover #status-message {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.stat.sticky-reveal {
+  opacity: 1 !important;
+  pointer-events: auto;
+  background: rgba(30, 30, 40, 0.70);
+  border-radius: 10px;
+  padding: 2px 6px;
+  animation: sticky-pulse 1.5s ease-in-out infinite;
 }
 
 #stats {
-  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  width: 100%;
 }
 
 .stat {
   display: flex;
   align-items: center;
   gap: 6px;
+  width: 100%;
+  font-size: 11px;
 }
 
 .stat-label {
-  font-size: 12px;
-  width: 18px;
+  width: 16px;
   text-align: center;
 }
 
@@ -95,30 +103,38 @@ body {
 
 .stat-fill {
   height: 100%;
+  width: 100%;
+  background: #4ade80;
   border-radius: 4px;
   transition: width 0.5s ease, background 0.5s ease;
-  width: 80%;
-  background: #4ade80;
 }
 
-.stat-fill.warning { background: #facc15; }
-.stat-fill.danger  { background: #f87171; }
+.stat-fill.warning {
+  background: #facc15;
+}
+
+.stat-fill.danger {
+  background: #f87171;
+}
 
 #buttons {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 6px;
+  margin-top: 8px;
+  justify-content: center;
 }
 
 #buttons button {
-  width: 40px;
+  width: 36px;
   height: 32px;
-  border: none;
-  border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
-  font-size: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
+  padding: 0;
 }
 
 #buttons button:hover {
@@ -129,10 +145,125 @@ body {
   transform: scale(0.92);
 }
 
-#status-message {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 11px;
-  margin-top: 6px;
-  height: 14px;
+html.dragging,
+html.dragging * {
+  cursor: grabbing !important;
+}
+
+#settings-overlay {
+  position: absolute;
+  inset: 6px;
+  background: rgba(30, 30, 40, 0.96);
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 10;
+  color: #fff;
+}
+
+#settings-overlay[hidden] {
+  display: none;
+}
+
+#settings-overlay h2 {
+  font-size: 12px;
+  margin: 0;
+  color: #ddd;
   text-align: center;
+}
+
+#settings-overlay label {
+  font-size: 11px;
+  color: #ddd;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#settings-overlay label > span {
+  min-width: 64px;
+}
+
+#settings-overlay input[type="text"],
+#settings-overlay input[type="range"],
+#settings-overlay select {
+  flex: 1;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+#settings-overlay output {
+  font-size: 10px;
+  color: #aaa;
+  min-width: 28px;
+  text-align: right;
+}
+
+#settings-close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+#setting-reset {
+  margin-top: auto;
+  background: rgba(248, 113, 113, 0.25);
+  color: #fff;
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  border-radius: 6px;
+  padding: 4px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+#setting-reset:hover {
+  background: rgba(248, 113, 113, 0.4);
+}
+
+#sprite.sleeping {
+  animation: sway 3s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+#sprite.dead {
+  animation: none;
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+#status-message {
+  height: 14px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50%      { transform: rotate(2deg); }
+}
+
+@keyframes sticky-pulse {
+  0%, 100% { transform: scale(1.00); filter: brightness(1.0); }
+  50%      { transform: scale(1.04); filter: brightness(1.2); }
 }
