@@ -1,5 +1,5 @@
 import { CONFIG } from '../shared/config'
-import type { AppState, Mood, PetState } from '../shared/state-types'
+import type { AppState, Mood, PetState, WindowBounds } from '../shared/state-types'
 import { AnimationQueue } from './animation-queue'
 import { makeDraggable } from './drag'
 import { attachKeyboardShortcuts } from './keyboard'
@@ -116,6 +116,51 @@ function makeDebouncedSaver(
   }
 }
 
+interface Layout {
+  idleWidth: number
+  idleHeight: number
+  hzOffsetX: number
+  hzOffsetY: number
+  expandedBoundsFromIdle: (idleScreenX: number, idleScreenY: number) => WindowBounds
+  idleBoundsFromExpanded: (expScreenX: number, expScreenY: number) => WindowBounds
+}
+
+async function measureLayout(container: HTMLElement, hoverZone: HTMLElement): Promise<Layout> {
+  container.classList.add('is-hovered')
+  if (document.fonts.status !== 'loaded') {
+    await document.fonts.ready
+  }
+  await new Promise<void>((r) => requestAnimationFrame(() => r()))
+  const rect = hoverZone.getBoundingClientRect()
+  container.classList.remove('is-hovered')
+
+  const hzOffsetX = rect.x
+  const hzOffsetY = rect.y
+  const idleWidth = Math.ceil(rect.width)
+  const idleHeight = Math.ceil(rect.height)
+  const expWidth = CONFIG.WINDOW.width
+  const expHeight = CONFIG.WINDOW.height
+
+  return {
+    idleWidth,
+    idleHeight,
+    hzOffsetX,
+    hzOffsetY,
+    expandedBoundsFromIdle: (idleScreenX, idleScreenY) => ({
+      x: idleScreenX - hzOffsetX,
+      y: idleScreenY - hzOffsetY,
+      width: expWidth,
+      height: expHeight,
+    }),
+    idleBoundsFromExpanded: (expScreenX, expScreenY) => ({
+      x: expScreenX + hzOffsetX,
+      y: expScreenY + hzOffsetY,
+      width: idleWidth,
+      height: idleHeight,
+    }),
+  }
+}
+
 async function bootstrap(): Promise<void> {
   const loaded = await window.electronAPI.loadState()
   const pet = new Pet(loaded ?? undefined)
@@ -204,18 +249,39 @@ async function bootstrap(): Promise<void> {
     energy: refs.energyRow,
   })
 
-  const onHoverEnter = (): void => {
+  updateUI(pet.state, pet.mood, refs, pet)
+
+  const layout = await measureLayout(refs.container, refs.hoverZone)
+
+  let isExpanded = true
+
+  const expand = (): void => {
+    if (isExpanded) return
+    isExpanded = true
     refs.container.classList.add('is-hovered')
+    window.electronAPI.setBounds(layout.expandedBoundsFromIdle(window.screenX, window.screenY))
+  }
+
+  const shrink = (): void => {
+    if (!isExpanded) return
+    isExpanded = false
+    refs.container.classList.remove('is-hovered')
+    window.electronAPI.setBounds(layout.idleBoundsFromExpanded(window.screenX, window.screenY))
+  }
+
+  const onHoverEnter = (): void => {
+    if (document.documentElement.classList.contains('dragging')) return
+    expand()
   }
   const onHoverLeave = (): void => {
-    if (!settings.isOpen()) {
-      refs.container.classList.remove('is-hovered')
-    }
+    if (document.documentElement.classList.contains('dragging')) return
+    if (settings.isOpen()) return
+    shrink()
   }
   refs.hoverZone.addEventListener('mouseenter', onHoverEnter)
   refs.container.addEventListener('mouseleave', onHoverLeave)
 
-  updateUI(pet.state, pet.mood, refs, pet)
+  shrink()
 
   pet.start()
 

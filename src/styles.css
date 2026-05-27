@@ -12,9 +12,11 @@ body {
 }
 
 #pet-container {
-  width: 200px;
-  height: 250px;
-  padding: 12px;
+  width: 100vw;
+  height: 100vh;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
   border-radius: 20px;
   background: transparent;
   border: 2px solid transparent;
@@ -24,10 +26,10 @@ body {
   justify-content: center;
   position: relative;
   cursor: grab;
-  transition: background 200ms ease, border-color 200ms ease;
 }
 
 #pet-container.is-hovered {
+  padding: 12px;
   background: rgba(30, 30, 40, 0.88);
   border-color: rgba(255, 255, 255, 0.12);
 }
@@ -59,16 +61,19 @@ body {
 #stats,
 #buttons,
 #status-message {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 200ms ease;
+  display: none;
 }
 
-#pet-container.is-hovered #stats,
-#pet-container.is-hovered #buttons,
+#pet-container.is-hovered #stats {
+  display: flex;
+}
+
+#pet-container.is-hovered #buttons {
+  display: flex;
+}
+
 #pet-container.is-hovered #status-message {
-  opacity: 1;
-  pointer-events: auto;
+  display: block;
 }
 
 .stat.sticky-reveal {

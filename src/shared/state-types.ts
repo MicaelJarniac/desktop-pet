@@ -20,3 +20,10 @@ export interface AppState {
   pet: PetState
   settings: Settings
 }
+
+export interface WindowBounds {
+  x: number
+  y: number
+  width: number
+  height: number
+}

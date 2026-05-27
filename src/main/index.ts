@@ -12,7 +12,7 @@ import * as path from 'node:path'
 
 import { CONFIG } from '../shared/config'
 import { loadState, makeDebouncedSaver } from './state-store'
-import type { AppState } from '../shared/state-types'
+import type { AppState, WindowBounds } from '../shared/state-types'
 import type { TrayAction } from '../shared/ipc-types'
 
 let mainWindow: BrowserWindow | null = null
@@ -43,6 +43,7 @@ function createWindow(): void {
     resizable: false,
     skipTaskbar: true,
     hasShadow: false,
+    show: false, // hide until renderer measures + shrinks to idle size
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -99,6 +100,19 @@ function registerIpc(): void {
     if (mainWindow === null) return
     const [x, y] = mainWindow.getPosition()
     mainWindow.setPosition(x + dx, y + dy)
+  })
+
+  ipcMain.on('window:setBounds', (_e, bounds: WindowBounds) => {
+    if (mainWindow === null) return
+    mainWindow.setBounds({
+      x: Math.round(bounds.x),
+      y: Math.round(bounds.y),
+      width: Math.round(bounds.width),
+      height: Math.round(bounds.height),
+    })
+    if (!mainWindow.isVisible()) {
+      mainWindow.show()
+    }
   })
 
   ipcMain.on('pet-notify', (_e, { title, body }: { title: string; body: string }) => {
