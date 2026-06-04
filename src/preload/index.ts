@@ -28,6 +28,20 @@ const api = {
   notify: (title: string, body: string): void => {
     ipcRenderer.send('pet-notify', { title, body })
   },
+  onSystemIdle: (cb: () => void): (() => void) => {
+    const handler = (): void => cb()
+    ipcRenderer.on('system:idle', handler)
+    return () => {
+      ipcRenderer.removeListener('system:idle', handler)
+    }
+  },
+  onSystemActive: (cb: () => void): (() => void) => {
+    const handler = (): void => cb()
+    ipcRenderer.on('system:active', handler)
+    return () => {
+      ipcRenderer.removeListener('system:active', handler)
+    }
+  },
 } satisfies ElectronAPI
 
 contextBridge.exposeInMainWorld('electronAPI', api)

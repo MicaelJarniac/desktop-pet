@@ -10,6 +10,8 @@ export interface IpcChannels {
   // main → renderer broadcasts:
   'tray:action': { broadcast: 'feed' | 'play' | 'sleep' | 'stats' }
   'window:resized': { broadcast: void }
+  'system:idle': { broadcast: void }
+  'system:active': { broadcast: void }
 }
 
 export type TrayAction = IpcChannels['tray:action']['broadcast']
@@ -22,4 +24,6 @@ export interface ElectronAPI {
   onTrayAction: (cb: (action: TrayAction) => void) => () => void
   onResized: (cb: () => void) => () => void
   notify: (title: string, body: string) => void
+  onSystemIdle: (cb: () => void) => () => void
+  onSystemActive: (cb: () => void) => () => void
 }

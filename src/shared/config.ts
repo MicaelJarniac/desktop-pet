@@ -40,6 +40,7 @@ export const CONFIG = {
     feedFrames: ['🤤', '😋', '😊'],
     playFrames: ['😄', '🎾', '😆'],
     sleepFrames: ['😴', '💤'],
+    petFrames: ['🥰', '💖', '✨'],
   },
   DRAG: {
     maxFps: 60,

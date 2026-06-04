@@ -7,6 +7,7 @@ import {
   Notification,
   nativeImage,
   screen,
+  powerMonitor
 } from 'electron'
 import * as path from 'node:path'
 
@@ -50,6 +51,25 @@ function createWindow(): void {
       nodeIntegration: false,
     },
   })
+
+    function setupPowerMonitor() {
+    const IDLE_THRESHOLD_SECONDS = 300; // 5 minutos de inatividade
+    let wasIdle = false;
+
+    setInterval(() => {
+      const idleTime = powerMonitor.getSystemIdleTime();
+      
+      if (idleTime >= IDLE_THRESHOLD_SECONDS && !wasIdle) {
+        wasIdle = true;
+        mainWindow?.webContents.send('system:idle');
+      } else if (idleTime < IDLE_THRESHOLD_SECONDS && wasIdle) {
+        wasIdle = false;
+        mainWindow?.webContents.send('system:active');
+      }
+    }, 5000); // Checa a cada 5 segundos
+    }
+
+    setupPowerMonitor();
 
   void mainWindow.loadFile(path.join(__dirname, 'index.html')).catch((err: unknown) => {
     console.error('[main] failed to load index.html:', err)

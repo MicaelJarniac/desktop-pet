@@ -50,6 +50,7 @@ body {
   white-space: nowrap;
   animation: bounce 2s ease-in-out infinite;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 #name {

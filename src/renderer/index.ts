@@ -208,6 +208,12 @@ async function bootstrap(): Promise<void> {
     pet.feed()
     animations.play(CONFIG.ANIMATION.feedFrames)
   })
+  refs.spriteEl.addEventListener('click', () => {
+    if (!pet.state.alive || pet.state.isSleeping) return;
+    pet.play();
+    animations.play(CONFIG.ANIMATION.petFrames);
+  });
+
   refs.btnPlay.addEventListener('click', () => {
     if (!pet.state.alive) {
       pet.reset()
@@ -320,6 +326,19 @@ async function bootstrap(): Promise<void> {
   void shrink()
 
   pet.start()
+
+  window.electronAPI.onSystemIdle(() => {
+    if (!pet.state.isSleeping && pet.state.alive) {
+      pet.sleep();
+      animations.play(CONFIG.ANIMATION.sleepFrames);
+    }
+  });
+
+  window.electronAPI.onSystemActive(() => {
+    if (pet.state.isSleeping && pet.state.alive) {
+      pet.sleep(); 
+    }
+  });
 
   window.addEventListener('beforeunload', () => {
     offTray()
