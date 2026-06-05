@@ -7,6 +7,7 @@ interface PetEvents {
   change: { state: PetState; mood: Mood }
   notify: { title: string; body: string; key: string }
   death: { state: PetState }
+  speech: { text: string }
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -18,6 +19,8 @@ function defaultState(): PetState {
     hunger: CONFIG.INITIAL_STATS.hunger,
     happiness: CONFIG.INITIAL_STATS.happiness,
     energy: CONFIG.INITIAL_STATS.energy,
+    xp: 0,
+    level: 1,
     alive: true,
     isSleeping: false,
   }
@@ -49,12 +52,18 @@ export class Pet extends TypedEmitter<PetEvents> {
   private decayTimer: ReturnType<typeof setInterval> | null = null
   private deathEmitted = false
   private lastNotify = new Map<string, number>()
+  private lastSpeech = 0
 
   constructor(initial?: AppState) {
     super()
 
     this._state = initial ? { ...initial.pet } : defaultState()
     this._settings = initial ? { ...initial.settings } : defaultSettings()
+    
+    // Migração de estado
+    if (this._state.xp === undefined) this._state.xp = 0
+    if (this._state.level === undefined) this._state.level = 1
+    
     this.deathEmitted = !this._state.alive
   }
 
@@ -84,6 +93,23 @@ export class Pet extends TypedEmitter<PetEvents> {
     return getPetType(this._settings.petTypeId).sprites[this.mood]
   }
 
+  say(text: string): void {
+    if (!this._state.alive) return
+    this.emit('speech', { text })
+    this.lastSpeech = Date.now()
+  }
+
+  addXp(amount: number): void {
+    if (!this._state.alive) return
+    this._state.xp += amount
+    const nextLevelXp = this._state.level * 100
+    if (this._state.xp >= nextLevelXp) {
+      this._state.level++
+      this._state.xp -= nextLevelXp
+      this.say(`LEVEL UP! Nível ${this._state.level}!`)
+    }
+  }
+
   feed(): void {
     if (!this._state.alive || this._state.isSleeping) return
 
@@ -93,6 +119,11 @@ export class Pet extends TypedEmitter<PetEvents> {
       0,
       100,
     )
+    this.addXp(30)
+    
+    const messages = ['Hummm!', 'Delícia!', '😋', 'Obrigado!', 'Nham nham']
+    this.say(messages[Math.floor(Math.random() * messages.length)])
+    
     this.emitChange()
   }
 
@@ -106,6 +137,11 @@ export class Pet extends TypedEmitter<PetEvents> {
     )
     this._state.energy = clamp(this._state.energy + CONFIG.ACTION_EFFECTS.play.energy, 0, 100)
     this._state.hunger = clamp(this._state.hunger + CONFIG.ACTION_EFFECTS.play.hunger, 0, 100)
+    this.addXp(30)
+
+    const messages = ['Eba!', 'Uhul!', '🎾', 'Divertido!', 'Isso!']
+    this.say(messages[Math.floor(Math.random() * messages.length)])
+
     this.emitChange()
   }
 
@@ -113,6 +149,11 @@ export class Pet extends TypedEmitter<PetEvents> {
     if (!this._state.alive) return
 
     this._state.isSleeping = !this._state.isSleeping
+    if (this._state.isSleeping) {
+      this.say('Zzz...')
+    } else {
+      this.say('Bom dia!')
+    }
     this.emitChange()
   }
 
@@ -138,6 +179,17 @@ export class Pet extends TypedEmitter<PetEvents> {
       this._state.hunger = clamp(this._state.hunger - CONFIG.DECAY_RATES.hunger, 0, 100)
       this._state.happiness = clamp(this._state.happiness - CONFIG.DECAY_RATES.happiness, 0, 100)
       this._state.energy = clamp(this._state.energy - CONFIG.DECAY_RATES.energy, 0, 100)
+      
+      // Random speech
+      const now = Date.now()
+      if (now - this.lastSpeech > 20000 && Math.random() < 0.3) {
+        let pool = ['Tudo bem por aí?', 'O que está fazendo?', '✨', 'lalala']
+        if (this._state.hunger < 30) pool = ['Fome...', 'Quero lanche', '🍪?']
+        if (this._state.happiness < 30) pool = ['Tédio...', 'Brinca comigo?', '💛?']
+        if (this._state.energy < 20) pool = ['Sono...', 'Zzz...', 'Cansado']
+        
+        this.say(pool[Math.floor(Math.random() * pool.length)])
+      }
     }
 
     if (this._state.hunger <= 0 && this._state.happiness <= 0 && this._state.energy <= 0) {

@@ -5,6 +5,8 @@ export interface PetState {
   hunger: number // 0..100
   happiness: number // 0..100
   energy: number // 0..100
+  xp: number
+  level: number
   alive: boolean
   isSleeping: boolean
 }

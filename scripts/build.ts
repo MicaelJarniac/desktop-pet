@@ -1,4 +1,4 @@
-import { copyFile } from 'node:fs/promises'
+import { copyFile, mkdir } from 'node:fs/promises'
 
 import { build, type BuildOptions } from 'esbuild'
 
@@ -11,6 +11,7 @@ const sharedNodeOptions = {
 } satisfies Partial<BuildOptions>
 
 const main = async () => {
+  await mkdir('dist', { recursive: true })
   await Promise.all([
     build({
       ...sharedNodeOptions,

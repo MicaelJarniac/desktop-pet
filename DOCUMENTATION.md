@@ -37,6 +37,8 @@ O **Desktop Pet** é um companheiro virtual para desktop estilo "Tamagotchi", de
 ### Funcionalidades Principais
 
 *   **Estado Persistente:** O pet "lembra" de sua fome, felicidade e energia mesmo após fechar o programa.
+*   **Sistema de XP e Níveis:** O pet ganha experiência ao ser alimentado ou ao brincar. Ao acumular XP suficiente, ele sobe de nível, o que é exibido ao lado do seu nome.
+*   **Balões de Pensamento (Speech Bubbles):** O pet se comunica visualmente através de balões que aparecem aleatoriamente ou em reação a ações (como comer ou dormir).
 *   **Interface Minimalista:** Janela transparente, sem bordas, que flutua acima de outras janelas.
 *   **Interações:** Você pode alimentar, brincar ou colocar o pet para dormir através de cliques, atalhos de teclado ou pelo menu da bandeja (Tray).
 *   **Sistema de Notificações:** O pet avisa quando está com fome ou precisa de atenção.

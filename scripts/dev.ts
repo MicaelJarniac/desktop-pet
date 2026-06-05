@@ -1,4 +1,4 @@
-import { copyFile } from 'node:fs/promises'
+import { copyFile, mkdir } from 'node:fs/promises'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { watch, type FSWatcher } from 'node:fs'
 import { setTimeout as delay } from 'node:timers/promises'
@@ -33,6 +33,7 @@ let shuttingDown = false
 let contexts: BuildContext[] = []
 
 const copyStaticFiles = async () => {
+  await mkdir('dist', { recursive: true })
   await Promise.all([
     copyFile('src/index.html', 'dist/index.html'),
     copyFile('src/styles.css', 'dist/styles.css'),

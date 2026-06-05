@@ -23,6 +23,7 @@ interface DomRefs {
   btnSleep: HTMLElement
   btnSettings: HTMLElement
   statusMsg: HTMLElement
+  speechBubble: HTMLElement
   overlay: HTMLElement
   closeBtn: HTMLElement
   nameInput: HTMLInputElement
@@ -61,6 +62,7 @@ function resolveDomRefs(): DomRefs {
     btnSleep: requireEl('btn-sleep'),
     btnSettings: requireEl('btn-settings'),
     statusMsg: requireEl('status-message'),
+    speechBubble: requireEl('speech-bubble'),
     overlay: requireEl('settings-overlay'),
     closeBtn: requireEl('settings-close'),
     nameInput: requireEl<HTMLInputElement>('setting-name'),
@@ -93,7 +95,7 @@ function updateUI(state: PetState, mood: Mood, refs: DomRefs, pet: Pet): void {
   refs.spriteEl.textContent = pet.sprite
   refs.spriteEl.classList.toggle('sleeping', state.isSleeping && state.alive)
   refs.spriteEl.classList.toggle('dead', !state.alive)
-  refs.nameEl.textContent = pet.settings.petName
+  refs.nameEl.textContent = `${pet.settings.petName} (Nv. ${state.level})`
   setBar(refs.hungerBar, state.hunger)
   setBar(refs.happinessBar, state.happiness)
   setBar(refs.energyBar, state.energy)
@@ -198,6 +200,17 @@ async function bootstrap(): Promise<void> {
   })
   pet.on('death', () => {
     refs.statusMsg.textContent = 'Click to try again...'
+  })
+
+  let speechTimer: ReturnType<typeof setTimeout> | null = null
+  pet.on('speech', ({ text }) => {
+    refs.speechBubble.textContent = text
+    refs.speechBubble.classList.add('visible')
+    if (speechTimer !== null) clearTimeout(speechTimer)
+    speechTimer = setTimeout(() => {
+      refs.speechBubble.classList.remove('visible')
+      speechTimer = null
+    }, 3000)
   })
 
   refs.btnFeed.addEventListener('click', () => {
