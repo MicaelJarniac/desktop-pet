@@ -39,6 +39,17 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 4px;
+  position: relative;
+}
+
+#accessory {
+  position: absolute;
+  top: -12px;
+  right: -5px;
+  font-size: 16px;
+  pointer-events: none;
+  z-index: 2;
+  transition: all 0.3s ease;
 }
 
 #sprite {
@@ -49,8 +60,20 @@ body {
   justify-content: center;
   white-space: nowrap;
   animation: bounce 2s ease-in-out infinite;
-  transition: all 0.3s ease;
+  transition: all 0.5s ease;
   cursor: pointer;
+}
+
+#sprite.mood-happy {
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+}
+
+#sprite.mood-sad, #sprite.mood-hungry {
+  filter: grayscale(0.4) brightness(0.9);
+}
+
+#sprite.mood-dead {
+  filter: grayscale(1) opacity(0.5);
 }
 
 #name {

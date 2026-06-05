@@ -11,6 +11,7 @@ interface DomRefs {
   container: HTMLElement
   hoverZone: HTMLElement
   spriteEl: HTMLElement
+  accessoryEl: HTMLElement
   nameEl: HTMLElement
   hungerBar: HTMLElement
   happinessBar: HTMLElement
@@ -50,6 +51,7 @@ function resolveDomRefs(): DomRefs {
     container: requireEl('pet-container'),
     hoverZone: requireEl('hover-zone'),
     spriteEl: requireEl('sprite'),
+    accessoryEl: requireEl('accessory'),
     nameEl: requireEl('name'),
     hungerBar: requireEl('hunger-bar'),
     happinessBar: requireEl('happiness-bar'),
@@ -93,8 +95,16 @@ function statusForMood(mood: Mood): string {
 
 function updateUI(state: PetState, mood: Mood, refs: DomRefs, pet: Pet): void {
   refs.spriteEl.textContent = pet.sprite
+  
+  // Limpar classes de mood e adicionar a atual
+  refs.spriteEl.className = '';
+  refs.spriteEl.classList.add(`mood-${mood}`);
   refs.spriteEl.classList.toggle('sleeping', state.isSleeping && state.alive)
   refs.spriteEl.classList.toggle('dead', !state.alive)
+  
+  // Acessório
+  refs.accessoryEl.textContent = pet.accessory;
+  
   refs.nameEl.textContent = `${pet.settings.petName} (Nv. ${state.level})`
   setBar(refs.hungerBar, state.hunger)
   setBar(refs.happinessBar, state.happiness)

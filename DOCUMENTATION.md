@@ -43,6 +43,12 @@ O **Desktop Pet** é um companheiro virtual para desktop estilo "Tamagotchi", de
 *   **Interações:** Você pode alimentar, brincar ou colocar o pet para dormir através de cliques, atalhos de teclado ou pelo menu da bandeja (Tray).
 *   **Sistema de Notificações:** O pet avisa quando está com fome ou precisa de atenção.
 *   **Diferentes Tipos de Pets:** Suporta múltiplos estilos (Pixel, Tama, Bot, Ghost) com animações próprias.
+*   **Recompensas por Nível (Acessórios):** Ao atingir marcos de nível (5, 10 e 20), o pet desbloqueia acessórios visuais exclusivos (Boné, Óculos Escuros e Coroa).
+*   **Assistente de Bem-Estar:** O pet envia lembretes periódicos (a cada 40 minutos) incentivando o usuário a beber água, alongar-se ou descansar os olhos.
+*   **Feedback Visual Emocional:** O pet utiliza filtros CSS dinâmicos para expressar seu estado:
+       *   *Brilho Dourado:* Quando está muito feliz.
+       *   *Tom Acinzentado:* Quando está triste, com fome ou sem energia.
+       *   *Transparência:* Quando está dormindo ou inativo.
 
 ### Arquitetura do Projeto
 

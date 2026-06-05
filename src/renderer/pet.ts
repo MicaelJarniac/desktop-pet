@@ -53,6 +53,7 @@ export class Pet extends TypedEmitter<PetEvents> {
   private deathEmitted = false
   private lastNotify = new Map<string, number>()
   private lastSpeech = 0
+  private lastHealthReminder = Date.now()
 
   constructor(initial?: AppState) {
     super()
@@ -73,6 +74,13 @@ export class Pet extends TypedEmitter<PetEvents> {
 
   get settings(): Readonly<Settings> {
     return this._settings
+  }
+
+  get accessory(): string {
+    if (this._state.level >= 20) return '👑'
+    if (this._state.level >= 10) return '😎'
+    if (this._state.level >= 5) return '🧢'
+    return ''
   }
 
   get mood(): Mood {
@@ -101,12 +109,18 @@ export class Pet extends TypedEmitter<PetEvents> {
 
   addXp(amount: number): void {
     if (!this._state.alive) return
+    const oldLevel = this._state.level
     this._state.xp += amount
     const nextLevelXp = this._state.level * 100
     if (this._state.xp >= nextLevelXp) {
       this._state.level++
       this._state.xp -= nextLevelXp
       this.say(`LEVEL UP! Nível ${this._state.level}!`)
+
+      // Feedback de acessório
+      if (this._state.level === 5) this.say('Ganhei um boné! 🧢')
+      if (this._state.level === 10) this.say('Ganhei óculos escuros! 😎')
+      if (this._state.level === 20) this.say('Agora sou o rei! 👑')
     }
   }
 
@@ -180,8 +194,21 @@ export class Pet extends TypedEmitter<PetEvents> {
       this._state.happiness = clamp(this._state.happiness - CONFIG.DECAY_RATES.happiness, 0, 100)
       this._state.energy = clamp(this._state.energy - CONFIG.DECAY_RATES.energy, 0, 100)
       
-      // Random speech
       const now = Date.now()
+
+      // Health Reminders (a cada 40 minutos)
+      if (now - this.lastHealthReminder > 40 * 60 * 1000) {
+        const reminders = [
+          'Hora de beber água! 💧',
+          'Que tal dar uma alongada? 🧘',
+          'Descanse os olhos um pouco! 👀',
+          'Levante-se um pouco! 🚶'
+        ]
+        this.say(reminders[Math.floor(Math.random() * reminders.length)])
+        this.lastHealthReminder = now
+      }
+
+      // Random speech
       if (now - this.lastSpeech > 20000 && Math.random() < 0.3) {
         let pool = ['Tudo bem por aí?', 'O que está fazendo?', '✨', 'lalala']
         if (this._state.hunger < 30) pool = ['Fome...', 'Quero lanche', '🍪?']
