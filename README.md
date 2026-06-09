@@ -98,21 +98,77 @@ This launches with `--dev`, which opens Chromium DevTools in a detached window s
 
 Right-click the tray icon and choose **Quit**. Closing the pet window also exits the app.
 
+## Building a Distributable
+
+Packaging is handled by [Electron Forge](https://www.electronforge.io/), configured in `forge.config.js`.
+
+### Package only (unpacked app)
+
+```bash
+npm run package
+```
+
+Produces a runnable unpacked build in `out/desktop-pet-<platform>-<arch>/` (e.g. `desktop-pet.app` on macOS, `desktop-pet.exe` on Windows, or a binary on Linux). Fast — best for local testing.
+
+### Make distributables (installers / single-file outputs)
+
+```bash
+npm run make
+```
+
+Produces platform-native distributables in `out/make/`:
+
+| Platform | Outputs | Notes |
+|---|---|---|
+| **macOS** | `.dmg`, `.zip` | The `.dmg` is the single-file installer you'd ship; the `.zip` contains the portable `.app` |
+| **Windows** | `.exe` (Squirrel installer), `.zip` | Squirrel handles install + auto-update; the `.zip` is a portable build |
+| **Linux** | `.deb`, `.rpm`, `.zip` | Package-manager installers, plus a portable `.zip` |
+
+Verified locally on `darwin/arm64`: `npm run make` produces a ~100 MB `desktop-pet-0.1.0-arm64.dmg`.
+
+### Configured makers
+
+In `forge.config.js`:
+
+- `@electron-forge/maker-dmg` — macOS `.dmg`
+- `@electron-forge/maker-squirrel` — Windows installer
+- `@electron-forge/maker-zip` — portable `.zip` for all platforms
+- `@electron-forge/maker-deb`, `@electron-forge/maker-rpm` — Linux package installers
+
+For a true single-file executable on Linux (`AppImage`), add a community maker such as [`@reforged/maker-appimage`](https://github.com/reforged/maker-appimage).
+
+### Cross-platform builds
+
+Each OS can only build its own targets natively. To produce builds for all platforms, run `npm run make` on each OS or set up CI with one job per platform (GitHub Actions is the typical setup).
+
+### Code signing / notarization
+
+For shipping to end users without OS security warnings:
+
+- **macOS** — Apple Developer ID certificate + notarization (configure under `packagerConfig.osxSign` and `osxNotarize`).
+- **Windows** — code-signing certificate (configure in the Squirrel maker).
+- **Linux** — no signing required.
+
+Both are optional for personal / development use.
+
 ## Tech Stack
 
-- [Electron](https://www.electronjs.org/) `^35.0.0` (only runtime dependency)
-- Vanilla JavaScript, HTML, and CSS — no bundler, no framework, no build step
+- [Electron](https://www.electronjs.org/) `^35.0.0`
+- [Electron Forge](https://www.electronforge.io/) `^7.11.2` for packaging and distribution
+- Vanilla JavaScript, HTML, and CSS — no bundler, no UI framework
 
 ## Project Layout
 
 ```
 desktop-pet/
-├── main.js          # Electron main process
-├── preload.js       # contextBridge API
+├── main.js           # Electron main process
+├── preload.js        # contextBridge API
+├── forge.config.js   # Electron Forge config (packagers, makers, fuses)
 ├── package.json
-└── src/
-    ├── index.html   # Renderer HTML
-    ├── pet.js       # Pet state machine
-    ├── renderer.js  # UI + IPC wiring
-    └── styles.css   # Styling and animations
+├── src/
+│   ├── index.html    # Renderer HTML
+│   ├── pet.js        # Pet state machine
+│   ├── renderer.js   # UI + IPC wiring
+│   └── styles.css    # Styling and animations
+└── out/              # Build output (gitignored)
 ```
