@@ -139,7 +139,7 @@ async function init() {
     settings = await window.electronAPI.getSettings();
   } catch (err) {
     console.error('[renderer] failed to load settings:', err);
-    settings = { name: 'Pixel', colors: { pet: '#ffffff', background: '#1e1e28', accent: '#4ade80' } };
+    settings = globalThis.validateSettings({});
   }
   applySettings(settings);
   pet.name = settings.name;
