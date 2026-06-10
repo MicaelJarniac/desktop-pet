@@ -8,9 +8,19 @@ const happyBar   = document.getElementById('happiness-bar');
 const energyBar  = document.getElementById('energy-bar');
 const statusMsg  = document.getElementById('status-message');
 
-const btnFeed  = document.getElementById('btn-feed');
-const btnPlay  = document.getElementById('btn-play');
-const btnSleep = document.getElementById('btn-sleep');
+const btnFeed     = document.getElementById('btn-feed');
+const btnPlay     = document.getElementById('btn-play');
+const btnSleep    = document.getElementById('btn-sleep');
+const btnSettings = document.getElementById('btn-settings');
+
+// --- Settings ---
+
+function applySettings(settings) {
+  const root = document.documentElement;
+  root.style.setProperty('--color-pet', settings.colors.pet);
+  root.style.setProperty('--color-bg', hexToRgba(settings.colors.background, 0.88));
+  root.style.setProperty('--color-accent', settings.colors.accent);
+}
 
 // --- Rendering ---
 
@@ -72,6 +82,11 @@ btnSleep.addEventListener('click', () => {
   flashMessage(pet.isSleeping ? 'Good night... 💤' : 'I\'m awake!');
 });
 
+// Settings button
+if (btnSettings) {
+  btnSettings.addEventListener('click', () => window.electronAPI.openSettings());
+}
+
 // Tray menu actions
 window.electronAPI.onAction((action) => {
   switch (action) {
@@ -82,6 +97,13 @@ window.electronAPI.onAction((action) => {
       flashMessage(`🍖${pet.hunger} 💛${pet.happiness} ⚡${pet.energy}`);
       break;
   }
+});
+
+// Live settings updates
+window.electronAPI.onSettingsUpdated((settings) => {
+  applySettings(settings);
+  pet.name = settings.name;
+  updateUI();
 });
 
 // --- Dragging ---
@@ -111,4 +133,18 @@ window.addEventListener('mouseup', () => {
 
 // --- Start ---
 
-pet.startLife(updateUI);
+async function init() {
+  let settings;
+  try {
+    settings = await window.electronAPI.getSettings();
+  } catch (err) {
+    console.error('[renderer] failed to load settings:', err);
+    settings = { name: 'Pixel', colors: { pet: '#ffffff', background: '#1e1e28', accent: '#4ade80' } };
+  }
+  applySettings(settings);
+  pet.name = settings.name;
+  updateUI();
+  pet.startLife(updateUI);
+}
+
+window.addEventListener('DOMContentLoaded', init);

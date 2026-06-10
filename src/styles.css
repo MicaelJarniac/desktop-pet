@@ -1,3 +1,9 @@
+:root {
+  --color-pet: #ffffff;
+  --color-bg: rgba(30, 30, 40, 0.88);
+  --color-accent: #4ade80;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -18,7 +24,7 @@ body {
   justify-content: center;
   width: 200px;
   height: 250px;
-  background: rgba(30, 30, 40, 0.88);
+  background: var(--color-bg);
   border-radius: 20px;
   border: 2px solid rgba(255, 255, 255, 0.12);
   padding: 12px;
@@ -32,6 +38,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--color-pet);
   animation: bounce 2s ease-in-out infinite;
   transition: all 0.3s ease;
 }
@@ -59,7 +66,7 @@ body {
 }
 
 #name {
-  color: #fff;
+  color: var(--color-accent);
   font-size: 14px;
   font-weight: 600;
   margin: 4px 0 8px;
@@ -98,7 +105,7 @@ body {
   border-radius: 4px;
   transition: width 0.5s ease, background 0.5s ease;
   width: 80%;
-  background: #4ade80;
+  background: var(--color-accent);
 }
 
 .stat-fill.warning { background: #facc15; }
@@ -122,7 +129,7 @@ body {
 }
 
 #buttons button:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-accent);
 }
 
 #buttons button:active {
@@ -135,4 +142,122 @@ body {
   margin-top: 6px;
   height: 14px;
   text-align: center;
+}
+
+body.settings-window {
+  background: #1e1e28;
+  color: #f5f5f7;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  padding: 18px 22px;
+  overflow: hidden;
+  cursor: default;
+}
+
+.settings-window #settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-window h1 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin: 0 0 6px;
+  color: var(--color-accent);
+}
+
+.settings-window .field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  user-select: none;
+}
+
+.settings-window .field-label {
+  flex: 1;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.settings-window input[type="text"] {
+  flex: 0 0 180px;
+  height: 28px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  color: #f5f5f7;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  user-select: text;
+}
+
+.settings-window input[type="text"]:focus {
+  border-color: var(--color-accent);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.settings-window input[type="color"] {
+  flex: 0 0 60px;
+  height: 28px;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.settings-window input[type="color"]:hover {
+  border-color: var(--color-accent);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.settings-window .form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.settings-window .form-buttons button {
+  min-width: 72px;
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f5f5f7;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+}
+
+.settings-window .form-buttons button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.settings-window .form-buttons button:active {
+  transform: scale(0.97);
+}
+
+.settings-window .form-buttons .btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #0c0c10;
+  font-weight: 600;
+}
+
+.settings-window .form-buttons .btn-primary:hover {
+  filter: brightness(1.08);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
 }
