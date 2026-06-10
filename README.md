@@ -34,21 +34,27 @@ A **preload script** acts as a secure bridge between them, exposing a minimal AP
   - 🍖 **Feed** — +25 hunger, +5 happiness
   - 🎾 **Play** — +20 happiness, −10 energy, −5 hunger
   - 💤 **Sleep** — toggles sleep mode; the pet auto-wakes when fully rested
-- **System tray icon** with Feed / Play / Sleep / Stats / Quit menu items
+- **System tray icon** with Feed / Play / Sleep / Settings / Stats / Quit menu items
 - **Native OS notifications** when the pet is hungry, lonely, wakes up, or dies (throttled to once per minute per message)
 - **Drag-to-move** — click and drag the pet window anywhere on screen
 - **Death and revival** — if all three stats hit 0 the pet dies; clicking any action button revives it with fresh stats
+- **Customizable name and colors** — open the settings window from the tray menu or the ⚙️ button to rename the pet and pick three colors (pet sprite, background, accent). Changes apply live and persist across restarts in a JSON file under the OS app-data directory.
 
 ### Architecture
 
 | File | Process | Role |
 | --- | --- | --- |
-| `main.js` | Main | Creates the frameless transparent window, sets up the tray menu, handles `window-move` and `pet-notify` IPC messages |
-| `preload.js` | Preload | Exposes `electronAPI` (`onAction`, `moveWindow`, `notify`) to the renderer via `contextBridge` |
-| `src/index.html` | Renderer | DOM layout — pet sprite, stat bars, action buttons, status text |
-| `src/pet.js` | Renderer | The `Pet` class — state machine, stat decay, mood logic, action handlers |
-| `src/renderer.js` | Renderer | Wires the DOM to the `Pet` instance, handles tray actions, implements drag-to-move |
-| `src/styles.css` | Renderer | Transparent container, sprite animations (bounce/sway), stat-bar coloring |
+| `main.js` | Main | Creates the pet window and the settings window, sets up the tray menu, handles `window-move`, `pet-notify`, and the `settings:get` / `settings:save` / `settings:open` IPC channels |
+| `preload.js` | Preload | Exposes `electronAPI` (`onAction`, `moveWindow`, `notify`, `getSettings`, `saveSettings`, `openSettings`, `onSettingsUpdated`) to both renderers via `contextBridge` |
+| `src/index.html` | Renderer (pet) | DOM layout — pet sprite, stat bars, Feed/Play/Sleep/Settings buttons, status text |
+| `src/pet.js` | Renderer (pet) | The `Pet` class — state machine, stat decay, mood logic, action handlers |
+| `src/renderer.js` | Renderer (pet) | Wires the DOM to the `Pet` instance, applies settings (CSS variables + pet name) on startup and on live updates, handles tray actions, implements drag-to-move |
+| `src/styles.css` | Renderer (both) | Theme variables (`--color-pet`, `--color-bg`, `--color-accent`), pet container, sprite animations, stat-bar coloring, and scoped `.settings-window` styles for the settings form |
+| `src/settings.html` | Renderer (settings) | DOM layout for the settings window — name input, three color pickers, Reset / Cancel / Save buttons |
+| `src/settings.js` | Renderer (settings) | Loads current settings via IPC, populates the form, handles Save / Cancel / Reset, subscribes to live updates |
+| `src/settings-schema.js` | Shared | Pure module: exports `SETTINGS_DEFAULTS` and a `validate()` function that normalizes input and falls back to defaults per field. Loaded in both Node (main + tests) and the browser renderer |
+| `src/utils/color.js` | Renderer (pet) | Pure `hexToRgba(hex, alpha)` helper used to apply the user's background color while preserving the 88% alpha |
+| `src/main/settings-store.js` | Main | Safe load / save / `ensureExists` for `<userData>/settings.json` — corrupt or missing files fall back to defaults without crashing |
 
 Window flags set in `main.js`:
 
@@ -62,6 +68,31 @@ hasShadow: false,
 ```
 
 The renderer never has Node.js access directly — `contextIsolation: true` and `nodeIntegration: false` keep it sandboxed, and the preload script is the only bridge.
+
+### Settings persistence
+
+Settings live in a JSON file at:
+
+- **macOS** — `~/Library/Application Support/desktop-pet/settings.json`
+- **Windows** — `%APPDATA%\desktop-pet\settings.json`
+- **Linux** — `~/.config/desktop-pet/settings.json`
+
+Shape:
+
+```json
+{
+  "name": "Pixel",
+  "colors": {
+    "pet": "#ffffff",
+    "background": "#1e1e28",
+    "accent": "#4ade80"
+  }
+}
+```
+
+The file is created on first launch with defaults. On every load it's run through `validate()` from `src/settings-schema.js`, which fills in any missing or invalid fields. A corrupt file logs a warning and falls back to defaults — the app never crashes on bad input. The next save rewrites the file cleanly. No third-party dependency is used for storage; just built-in `fs` and `path`.
+
+When the user saves in the settings window, the main process broadcasts `settings:updated` to every renderer, which then re-applies the three CSS variables and updates the pet's displayed name — no restart needed.
 
 ## Requirements
 
@@ -97,6 +128,16 @@ This launches with `--dev`, which opens Chromium DevTools in a detached window s
 ### Quitting
 
 Right-click the tray icon and choose **Quit**. Closing the pet window also exits the app.
+
+## Tests
+
+Unit tests for the pure modules (`settings-schema.js`, `utils/color.js`) use Node's built-in test runner — no test framework or other dependency required.
+
+```bash
+npm test
+```
+
+This runs every `test/*.test.js` file and prints a TAP summary. The suite covers schema defaults, validation (name length, color hex format, partial / null / garbage input), and the `hexToRgba` helper (valid conversions, case insensitivity, invalid inputs throw).
 
 ## Building a Distributable
 
@@ -161,14 +202,24 @@ Both are optional for personal / development use.
 
 ```
 desktop-pet/
-├── main.js           # Electron main process
-├── preload.js        # contextBridge API
-├── forge.config.js   # Electron Forge config (packagers, makers, fuses)
+├── main.js                       # Electron main process (pet + settings windows, tray, IPC)
+├── preload.js                    # contextBridge API exposed to both renderers
+├── forge.config.js               # Electron Forge config (packagers, makers, fuses)
 ├── package.json
 ├── src/
-│   ├── index.html    # Renderer HTML
-│   ├── pet.js        # Pet state machine
-│   ├── renderer.js   # UI + IPC wiring
-│   └── styles.css    # Styling and animations
-└── out/              # Build output (gitignored)
+│   ├── index.html                # Pet window markup
+│   ├── pet.js                    # Pet state machine
+│   ├── renderer.js               # Pet renderer — applies settings, wires UI, drag-to-move
+│   ├── styles.css                # Theme variables + pet styles + scoped settings styles
+│   ├── settings.html             # Settings window markup
+│   ├── settings.js               # Settings renderer — form logic
+│   ├── settings-schema.js        # Pure defaults + validator (shared, UMD)
+│   ├── main/
+│   │   └── settings-store.js     # Main-process load/save (JSON in userData)
+│   └── utils/
+│       └── color.js              # Pure hexToRgba helper (shared, UMD)
+├── test/
+│   ├── settings-schema.test.js   # node:test suite for the schema validator
+│   └── color.test.js             # node:test suite for hexToRgba
+└── out/                          # Build output (gitignored)
 ```
