@@ -1,3 +1,5 @@
+**English** | [Português (Brasil)](README.pt-BR.md)
+
 # Desktop Pet
 
 A Tamagotchi-style desktop companion built with [Electron](https://www.electronjs.org/). A small, transparent, always-on-top window sits in the corner of your screen with an ASCII art pet that you need to feed, play with, and put to sleep — or it will die.
