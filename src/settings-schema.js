@@ -8,46 +8,43 @@ const SETTINGS_DEFAULTS = Object.freeze({
   })
 });
 
-function validate(input) {
-  // Coerce to object; missing/wrong-type → defaults per field
-  if (input === null || input === undefined || typeof input !== 'object' || Array.isArray(input)) {
-    return JSON.parse(JSON.stringify(SETTINGS_DEFAULTS));
-  }
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+const COLOR_KEYS = ['pet', 'background', 'accent'];
+const NAME_MIN_LENGTH = 1;
+const NAME_MAX_LENGTH = 20;
 
-  // Validate name
-  let name = 'Pixel';
-  if (typeof input.name === 'string') {
-    const trimmed = input.name.trim();
-    if (trimmed.length >= 1 && trimmed.length <= 20) {
-      name = trimmed;
-    }
-  }
-
-  // Validate colors
-  const colors = {
-    pet: '#ffffff',
-    background: '#1e1e28',
-    accent: '#4ade80'
-  };
-
-  if (input.colors && typeof input.colors === 'object' && !Array.isArray(input.colors)) {
-    const hexRegex = /^#[0-9a-fA-F]{6}$/;
-
-    if (typeof input.colors.pet === 'string' && hexRegex.test(input.colors.pet)) {
-      colors.pet = input.colors.pet;
-    }
-    if (typeof input.colors.background === 'string' && hexRegex.test(input.colors.background)) {
-      colors.background = input.colors.background;
-    }
-    if (typeof input.colors.accent === 'string' && hexRegex.test(input.colors.accent)) {
-      colors.accent = input.colors.accent;
-    }
-  }
-
-  return { name, colors };
+function isPlainObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
-// UMD pattern: load in Node and browser
+function defaults() {
+  return JSON.parse(JSON.stringify(SETTINGS_DEFAULTS));
+}
+
+function validate(input) {
+  if (!isPlainObject(input)) return defaults();
+
+  const result = defaults();
+
+  if (typeof input.name === 'string') {
+    const trimmed = input.name.trim();
+    if (trimmed.length >= NAME_MIN_LENGTH && trimmed.length <= NAME_MAX_LENGTH) {
+      result.name = trimmed;
+    }
+  }
+
+  if (isPlainObject(input.colors)) {
+    for (const key of COLOR_KEYS) {
+      const value = input.colors[key];
+      if (typeof value === 'string' && HEX_COLOR.test(value)) {
+        result.colors[key] = value;
+      }
+    }
+  }
+
+  return result;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { SETTINGS_DEFAULTS, validate };
 } else {
