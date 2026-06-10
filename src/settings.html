@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pet Settings</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="settings-window">
+  <form id="settings-form" autocomplete="off">
+    <h1>Pet Settings</h1>
+
+    <label class="field">
+      <span class="field-label">Name</span>
+      <input type="text" id="pet-name" maxlength="20" required />
+    </label>
+
+    <label class="field">
+      <span class="field-label">Pet color</span>
+      <input type="color" id="color-pet" />
+    </label>
+
+    <label class="field">
+      <span class="field-label">Background</span>
+      <input type="color" id="color-bg" />
+    </label>
+
+    <label class="field">
+      <span class="field-label">Accent</span>
+      <input type="color" id="color-accent" />
+    </label>
+
+    <div class="form-buttons">
+      <button type="button" id="btn-reset" class="btn-secondary">Reset</button>
+      <button type="button" id="btn-cancel" class="btn-secondary">Cancel</button>
+      <button type="submit" id="btn-save" class="btn-primary">Save</button>
+    </div>
+  </form>
+
+  <script src="settings-schema.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>
